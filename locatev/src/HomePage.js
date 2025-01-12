@@ -21,16 +21,48 @@ const HomePage = () => {
       1.00, 5.00, 2.15, 3.15, 4.15
   ];
 
+  const createCustomMarker = (color) => {
+    // SVG for Google Maps style pin with EV icon
+    const svgString = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="24" height="36">
+        <!-- Pin Shadow -->
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity="0.3"/>
+        </filter>
+  
+        <!-- Pin Body -->
+        <path d="M12 0C5.383 0 0 5.383 0 12c0 9 12 24 12 24s12-15 12-24c0-6.617-5.383-12-12-12z"
+              fill="${color}"
+              filter="url(#shadow)"/>
+  
+        <!-- White Circle for Icon -->
+        <circle cx="12" cy="12" r="8" fill="white"/>
+  
+        <!-- EV Charging Icon -->
+        <g transform="translate(6,6) scale(0.5)">
+          <path d="M19.77 14.33v-2.24L16.44 18h2.33v2.24L22.11 14h-2.34zm2.34-4.33h-8v3.2h2.4v3.2h-4.8V4c0-.53-.43-1-1-1H6c-.53 0-1 .47-1 1v11c0 .53.47 1 1 1h4c.53 0 1-.47 1-1v-3h2l3.2 7h5.6v-2h1.6c.53 0 1-.47 1-1v-6c0-.53-.47-1-1-1z"
+                fill="${color}"/>
+        </g>
+      </svg>`;
+  
+    // Convert the SVG string to a URL
+    const svgUrl = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgString);
+    
+    return {
+      url: svgUrl,
+      scaledSize: new window.google.maps.Size(32, 48), // Slightly larger for better visibility
+      anchor: new window.google.maps.Point(16, 48), // Bottom center of the pin
+    };
+  };
+
   const handlePayment = (stationName, price) => {
     navigate(`/payment?station=${encodeURIComponent(stationName)}&price=${price}`);
 };
-
-  const getMarkerColor = (price) => {
-      if (price <= 2.5) return 'green';
-      if (price <= 3.75) return 'yellow';
-      return 'orange';
-  };
-
+const getMarkerColor = (price) => {
+  if (price <= 2.5) return '#34A853';  // Google Maps green
+  if (price <= 3.75) return '#FBBC04'; // Google Maps yellow
+  return '#EA4335';                    // Google Maps red
+};
   useEffect(() => {
       if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
           setMapError('Please provide a valid API key');
@@ -164,59 +196,110 @@ const searchNearbyChargingStations = async (coordinates) => {
           setChargingStations(stations);
 
           stations.forEach(station => {
-              const markerColor = getMarkerColor(station.price);
-              const marker = new window.google.maps.Marker({
-                  position: station.location,
-                  map: mapInstanceRef.current,
-                  title: station.name,
-                  icon: {
-                      url: `https://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`
-                  }
-              });
-
-              const infoWindowContent = `
-                  <div style="padding: 10px;">
-                      <h3 style="margin: 0 0 5px 0; font-weight: bold;">${station.name}</h3>
-                      <p style="margin: 0 0 5px 0;">${station.address}</p>
-                      <p style="margin: 0 0 10px 0; font-weight: bold; color: ${markerColor === 'yellow' ? '#b8b800' : markerColor};">
-                          $${station.price.toFixed(2)}/hour
-                      </p>
-                      <button 
-                          onclick="handleInfoWindowPayment('${station.name.replace(/'/g, "\\'")}', ${station.price})"
-                          style="
-                              background-color: #4285f4;
-                              color: white;
-                              border: none;
-                              padding: 8px 16px;
-                              border-radius: 4px;
-                              cursor: pointer;
-                              font-size: 14px;
-                              width: 100%;
-                          "
-                      >
-                          Start Charging
-                      </button>
+            const markerColor = getMarkerColor(station.price);
+            const marker = new window.google.maps.Marker({
+              position: station.location,
+              map: mapInstanceRef.current,
+              title: station.name,
+              icon: createCustomMarker(markerColor),
+              animation: window.google.maps.Animation.DROP
+            });
+          
+            // Enhanced InfoWindow style
+            const infoWindowContent = `
+              <div style="
+                padding: 16px;
+                border-radius: 8px;
+                min-width: 200px;
+                max-width: 300px;
+              ">
+                <div style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 8px;
+                ">
+                  <div style="
+                    background-color: ${markerColor};
+                    border-radius: 50%;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  ">
+                    <svg width="16" height="16" viewBox="0 0 24 24" style="fill: white">
+                      <path d="M19.77 14.33v-2.24L16.44 18h2.33v2.24L22.11 14h-2.34zm2.34-4.33h-8v3.2h2.4v3.2h-4.8V4c0-.53-.43-1-1-1H6c-.53 0-1 .47-1 1v11c0 .53.47 1 1 1h4c.53 0 1-.47 1-1v-3h2l3.2 7h5.6v-2h1.6c.53 0 1-.47 1-1v-6c0-.53-.47-1-1-1z"/>
+                    </svg>
                   </div>
-              `;
+                  <h3 style="
+                    margin: 0;
+                    font-size: 16px;
+                    font-weight: 500;
+                    color: #202124;
+                  ">${station.name}</h3>
+                </div>
+                <p style="
+                  margin: 0 0 12px 0;
+                  font-size: 14px;
+                  color: #5f6368;
+                  line-height: 1.4;
+                ">${station.address}</p>
+                <p style="
+                  margin: 0 0 16px 0;
+                  font-size: 16px;
+                  font-weight: 500;
+                  color: ${markerColor};
+                ">
+                  $${station.price.toFixed(2)}/hour
+                </p>
+                <button 
+                  onclick="handleInfoWindowPayment('${station.name.replace(/'/g, "\\'")}', ${station.price})"
+                  style="
+                    background-color: ${markerColor};
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    width: 100%;
+                    font-weight: 500;
+                    transition: background-color 0.2s;
+                  "
+                  onmouseover="this.style.backgroundColor='${markerColor}DD'"
+                  onmouseout="this.style.backgroundColor='${markerColor}'"
+                >
+                  Start Charging
+                </button>
+              </div>
+            `;
 
-              // Add the handleInfoWindowPayment function to the window object
-              window.handleInfoWindowPayment = (stationName, price) => {
-                  handlePayment(stationName, price);
-              };
-
-              const infoWindow = new window.google.maps.InfoWindow({
-                  content: infoWindowContent
-              });
-
-              marker.addListener('click', () => {
-                  if (currentInfoWindowRef.current) {
-                      currentInfoWindowRef.current.close();
-                  }
-                  infoWindow.open(mapInstanceRef.current, marker);
-                  currentInfoWindowRef.current = infoWindow;
-              });
-
-              markersRef.current.push(marker);
+            window.handleInfoWindowPayment = (stationName, price) => {
+              handlePayment(stationName, price);
+          };
+          
+            const infoWindow = new window.google.maps.InfoWindow({
+              content: infoWindowContent,
+              maxWidth: 300,
+            });
+          
+            
+            marker.addListener('click', () => {
+              if (currentInfoWindowRef.current) {
+                currentInfoWindowRef.current.close();
+              }
+              infoWindow.open(mapInstanceRef.current, marker);
+              currentInfoWindowRef.current = infoWindow;
+            });
+          
+            // Add hover animation
+            marker.addListener('mouseover', () => {
+              marker.setAnimation(window.google.maps.Animation.BOUNCE);
+              setTimeout(() => marker.setAnimation(null), 750);
+            });
+          
+            markersRef.current.push(marker);
           });
       }
   } catch (error) {
