@@ -1,0 +1,154 @@
+/* PaymentPage.css */
+
+.payment-container {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding: 2rem 1rem;
+}
+
+.payment-card {
+    max-width: 500px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.payment-header {
+    background-color: #18721d;
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.payment-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.station-info {
+    background-color: rgba(24, 114, 29, 0.1);
+    margin: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.station-info h3 {
+    color: #18721d;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.station-info p {
+    color: #333;
+    margin: 0;
+}
+
+.payment-methods {
+    padding: 1.5rem;
+}
+
+.payment-method-button {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-method-button:hover {
+    border-color: #18721d;
+    background-color: rgba(24, 114, 29, 0.05);
+}
+
+.payment-method-button.selected {
+    border-color: #18721d;
+    background-color: rgba(24, 114, 29, 0.1);
+}
+
+.payment-method-button svg {
+    color: #18721d;
+}
+
+.payment-form {
+    padding: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.90rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #18721d;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 1rem;
+    background-color: #18721d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.submit-button:hover {
+    background-color: #145e18;
+}
+
+.submit-button:disabled {
+    background-color: #94b695;
+    cursor: not-allowed;
+}
+
+.apple-pay-button {
+    background-color: #000;
+}
+
+.apple-pay-button:hover {
+    background-color: #333;
+}
+
+@media (max-width: 640px) {
+    .payment-card {
+        margin: 0 auto;
+    }
+    
+    .input-row {
+        grid-template-columns: 1fr;
+    }
+}
