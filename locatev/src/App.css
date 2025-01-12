@@ -1,0 +1,23 @@
+.feed{
+  position: absolute;
+  margin-top: 10%;
+  margin-left: 25%;
+  
+  width: 65%;
+  height: 80%;
+  overflow-y: scroll;
+  overflow: visible;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.feed-posts{
+  
+  
+  background-color: #f8f8f8;
+  height: 65%;
+  margin-bottom: 10%;
+
+  border-radius: 20px;
+}
