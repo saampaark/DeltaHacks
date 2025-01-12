@@ -11,6 +11,20 @@ const HomePage = () => {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
 
+  // Fixed price points between 1-5
+  const pricePoints = [
+    1.25, 1.50, 1.75, 2.00, 2.25,
+    2.50, 2.75, 3.00, 3.25, 3.50,
+    3.75, 4.00, 4.25, 4.50, 4.75,
+    1.00, 5.00, 2.15, 3.15, 4.15
+  ];
+
+  const getMarkerColor = (price) => {
+    if (price <= 2.5) return 'green';
+    if (price <= 3.75) return 'yellow';
+    return 'orange';
+  };
+
   // Initialize map
   useEffect(() => {
     if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
@@ -18,7 +32,6 @@ const HomePage = () => {
       return;
     }
 
-    // Load Google Maps Script
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
     script.async = true;
@@ -39,7 +52,7 @@ const HomePage = () => {
     try {
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
         center: { lat: 43.7, lng: -79.4 },
-        zoom: 12
+        zoom: 15
       });
     } catch (error) {
       setMapError('Error initializing map');
@@ -53,21 +66,17 @@ const HomePage = () => {
 
     setLoading(true);
     try {
-      // Clear existing markers
       markersRef.current.forEach(marker => marker.setMap(null));
       markersRef.current = [];
 
-      // Geocode the location
       const coordinates = await geocodeLocation(searchQuery);
       if (!coordinates) {
         throw new Error('Location not found');
       }
 
-      // Update map center and zoom
       mapInstanceRef.current.setCenter(coordinates);
-      mapInstanceRef.current.setZoom(13);
+      mapInstanceRef.current.setZoom(15);
 
-      // Search for charging stations
       await searchNearbyChargingStations(coordinates);
     } catch (error) {
       setMapError(error.message);
@@ -123,25 +132,29 @@ const HomePage = () => {
 
       const data = await response.json();
       if (data.places) {
-        const stations = data.places.map(place => ({
+        // Shuffle price points array to randomly assign prices
+        const shuffledPrices = [...pricePoints].sort(() => Math.random() - 0.5);
+
+        const stations = data.places.map((place, index) => ({
           name: place.displayName.text,
           address: place.formattedAddress,
           location: {
             lat: place.location.latitude,
             lng: place.location.longitude
-          }
+          },
+          price: shuffledPrices[index] // Assign random price
         }));
 
         setChargingStations(stations);
 
-        // Add markers for each station
         stations.forEach(station => {
+          const markerColor = getMarkerColor(station.price);
           const marker = new window.google.maps.Marker({
             position: station.location,
             map: mapInstanceRef.current,
             title: station.name,
             icon: {
-              url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+              url: `https://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`
             }
           });
 
@@ -149,7 +162,10 @@ const HomePage = () => {
             content: `
               <div style="padding: 10px;">
                 <h3 style="margin: 0 0 5px 0; font-weight: bold;">${station.name}</h3>
-                <p style="margin: 0;">${station.address}</p>
+                <p style="margin: 0 0 5px 0;">${station.address}</p>
+                <p style="margin: 0; font-weight: bold; color: ${markerColor === 'yellow' ? '#b8b800' : markerColor};">
+                  $${station.price.toFixed(2)}/hour
+                </p>
               </div>
             `
           });
@@ -203,6 +219,17 @@ const HomePage = () => {
       {chargingStations.length > 0 && (
         <div className="stations-list">
           <h3>Nearby Charging Stations</h3>
+          <div className="price-legend">
+            <div className="legend-item">
+              <span className="dot green"></span> Under $2.50/hr
+            </div>
+            <div className="legend-item">
+              <span className="dot yellow"></span> $2.50-$3.75/hr
+            </div>
+            <div className="legend-item">
+              <span className="dot orange"></span> Over $3.75/hr
+            </div>
+          </div>
           {chargingStations.map((station, index) => (
             <div
               key={index}
@@ -214,6 +241,9 @@ const HomePage = () => {
             >
               <h4>{station.name}</h4>
               <p>{station.address}</p>
+              <p className={`price ${getMarkerColor(station.price)}`}>
+                ${station.price.toFixed(2)}/hour
+              </p>
             </div>
           ))}
         </div>
