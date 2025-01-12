@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -11,6 +12,7 @@ const HomePage = () => {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
   const currentInfoWindowRef = useRef(null);
+  const navigate = useNavigate();
 
   const pricePoints = [
       1.25, 1.50, 1.75, 2.00, 2.25,
@@ -20,12 +22,8 @@ const HomePage = () => {
   ];
 
   const handlePayment = (stationName, price) => {
-      // Here you would typically redirect to a payment processing page
-      // For now, we'll just show an alert
-      alert(`Redirecting to payment page for ${stationName} at $${price.toFixed(2)}/hour`);
-      // You can implement your payment logic here, such as:
-      // window.location.href = `/payment?station=${encodeURIComponent(stationName)}&price=${price}`;
-  };
+    navigate(`/payment?station=${encodeURIComponent(stationName)}&price=${price}`);
+};
 
   const getMarkerColor = (price) => {
       if (price <= 2.5) return 'green';
@@ -119,113 +117,113 @@ const geocodeLocation = (address) => {
     });
 };
 
-  const searchNearbyChargingStations = async (coordinates) => {
-      try {
-          const response = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-Goog-Api-Key': API_KEY,
-                  'X-Goog-FieldMask': 'places.displayName,places.location,places.formattedAddress'
+const searchNearbyChargingStations = async (coordinates) => {
+  try {
+      const response = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': API_KEY,
+              'X-Goog-FieldMask': 'places.displayName,places.location,places.formattedAddress'
+          },
+          body: JSON.stringify({
+              includedTypes: ["electric_vehicle_charging_station"],
+              maxResultCount: 20,
+              locationRestriction: {
+                  circle: {
+                      center: {
+                          latitude: coordinates.lat,
+                          longitude: coordinates.lng
+                      },
+                      radius: 10000
+                  }
               },
-              body: JSON.stringify({
-                  includedTypes: ["electric_vehicle_charging_station"],
-                  maxResultCount: 20,
-                  locationRestriction: {
-                      circle: {
-                          center: {
-                              latitude: coordinates.lat,
-                              longitude: coordinates.lng
-                          },
-                          radius: 10000
-                      }
-                  },
-                  rankPreference: "DISTANCE"
-              })
-          });
+              rankPreference: "DISTANCE"
+          })
+      });
 
-          if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.error?.message || 'Failed to fetch charging stations');
-          }
-
-          const data = await response.json();
-          if (data.places) {
-              const shuffledPrices = [...pricePoints].sort(() => Math.random() - 0.5);
-
-              const stations = data.places.map((place, index) => ({
-                  name: place.displayName.text,
-                  address: place.formattedAddress,
-                  location: {
-                      lat: place.location.latitude,
-                      lng: place.location.longitude
-                  },
-                  price: shuffledPrices[index]
-              }));
-
-              setChargingStations(stations);
-
-              stations.forEach(station => {
-                  const markerColor = getMarkerColor(station.price);
-                  const marker = new window.google.maps.Marker({
-                      position: station.location,
-                      map: mapInstanceRef.current,
-                      title: station.name,
-                      icon: {
-                          url: `https://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`
-                      }
-                  });
-
-                  const infoWindowContent = `
-                      <div style="padding: 10px;">
-                          <h3 style="margin: 0 0 5px 0; font-weight: bold;">${station.name}</h3>
-                          <p style="margin: 0 0 5px 0;">${station.address}</p>
-                          <p style="margin: 0 0 10px 0; font-weight: bold; color: ${markerColor === 'yellow' ? '#b8b800' : markerColor};">
-                              $${station.price.toFixed(2)}/hour
-                          </p>
-                          <button 
-                              onclick="handleInfoWindowPayment('${station.name.replace(/'/g, "\\'")}', ${station.price})"
-                              style="
-                                  background-color: #4285f4;
-                                  color: white;
-                                  border: none;
-                                  padding: 8px 16px;
-                                  border-radius: 4px;
-                                  cursor: pointer;
-                                  font-size: 14px;
-                                  width: 100%;
-                              "
-                          >
-                              Start Charging
-                          </button>
-                      </div>
-                  `;
-
-                  // Add the handleInfoWindowPayment function to the window object
-                  window.handleInfoWindowPayment = (stationName, price) => {
-                      handlePayment(stationName, price);
-                  };
-
-                  const infoWindow = new window.google.maps.InfoWindow({
-                      content: infoWindowContent
-                  });
-
-                  marker.addListener('click', () => {
-                      if (currentInfoWindowRef.current) {
-                          currentInfoWindowRef.current.close();
-                      }
-                      infoWindow.open(mapInstanceRef.current, marker);
-                      currentInfoWindowRef.current = infoWindow;
-                  });
-
-                  markersRef.current.push(marker);
-              });
-          }
-      } catch (error) {
-          console.error('Error fetching charging stations:', error);
-          throw error;
+      if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'Failed to fetch charging stations');
       }
-  };
+
+      const data = await response.json();
+      if (data.places) {
+          const shuffledPrices = [...pricePoints].sort(() => Math.random() - 0.5);
+
+          const stations = data.places.map((place, index) => ({
+              name: place.displayName.text,
+              address: place.formattedAddress,
+              location: {
+                  lat: place.location.latitude,
+                  lng: place.location.longitude
+              },
+              price: shuffledPrices[index]
+          }));
+
+          setChargingStations(stations);
+
+          stations.forEach(station => {
+              const markerColor = getMarkerColor(station.price);
+              const marker = new window.google.maps.Marker({
+                  position: station.location,
+                  map: mapInstanceRef.current,
+                  title: station.name,
+                  icon: {
+                      url: `https://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`
+                  }
+              });
+
+              const infoWindowContent = `
+                  <div style="padding: 10px;">
+                      <h3 style="margin: 0 0 5px 0; font-weight: bold;">${station.name}</h3>
+                      <p style="margin: 0 0 5px 0;">${station.address}</p>
+                      <p style="margin: 0 0 10px 0; font-weight: bold; color: ${markerColor === 'yellow' ? '#b8b800' : markerColor};">
+                          $${station.price.toFixed(2)}/hour
+                      </p>
+                      <button 
+                          onclick="handleInfoWindowPayment('${station.name.replace(/'/g, "\\'")}', ${station.price})"
+                          style="
+                              background-color: #4285f4;
+                              color: white;
+                              border: none;
+                              padding: 8px 16px;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 14px;
+                              width: 100%;
+                          "
+                      >
+                          Start Charging
+                      </button>
+                  </div>
+              `;
+
+              // Add the handleInfoWindowPayment function to the window object
+              window.handleInfoWindowPayment = (stationName, price) => {
+                  handlePayment(stationName, price);
+              };
+
+              const infoWindow = new window.google.maps.InfoWindow({
+                  content: infoWindowContent
+              });
+
+              marker.addListener('click', () => {
+                  if (currentInfoWindowRef.current) {
+                      currentInfoWindowRef.current.close();
+                  }
+                  infoWindow.open(mapInstanceRef.current, marker);
+                  currentInfoWindowRef.current = infoWindow;
+              });
+
+              markersRef.current.push(marker);
+          });
+      }
+  } catch (error) {
+      console.error('Error fetching charging stations:', error);
+      throw error;
+  }
+};
 
     return (
         <div className="home-container">
