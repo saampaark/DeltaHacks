@@ -86,7 +86,7 @@ const AuthPage = () => {
 
   return (
     <div className="auth-container">
-      <h2>{isLogin ? "Login in on LocatEV" : "Create Account"}</h2>
+      <h2>{isLogin ? "Login in to LocatEV" : "Create Account"}</h2>
       {error && <p className="error">{error}</p>}
 
       <div className="social-login">
