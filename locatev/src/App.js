@@ -1,20 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
-import LoginPage from "./LoginPage";
+import AuthPage from "./AuthPage";
 import HomePage from "./HomePage";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login page route */}
-        <Route path="/login" element={<LoginPage />} />
-
-        {/* Home page route */}
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomePage />} />
-
-        {/* Default route: Redirect to login */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/auth" />} />
       </Routes>
     </Router>
   );
