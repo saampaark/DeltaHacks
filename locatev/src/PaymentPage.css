@@ -16,7 +16,7 @@
 }
 
 .payment-header {
-    background-color: #18721d;
+    background-color: #FFFFFF;
     color: white;
     padding: 1.5rem;
     text-align: center;
@@ -36,7 +36,7 @@
 }
 
 .station-info h3 {
-    color: #18721d;
+    color: #111;
     margin: 0 0 0.5rem 0;
     font-size: 1.1rem;
 }
