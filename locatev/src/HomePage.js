@@ -48,11 +48,13 @@ const HomePage = () => {
     };
   }, []);
 
+
   const initMap = () => {
+    
     try {
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
         center: { lat: 43.7, lng: -79.4 },
-        zoom: 15
+        zoom: 15,
       });
     } catch (error) {
       setMapError('Error initializing map');
