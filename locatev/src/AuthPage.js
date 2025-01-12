@@ -86,8 +86,23 @@ const AuthPage = () => {
 
   return (
     <div className="auth-container">
-      <h2>{isLogin ? "Login" : "Create Account"}</h2>
+      <h2>{isLogin ? "Login in on LocatEV" : "Create Account"}</h2>
       {error && <p className="error">{error}</p>}
+
+      <div className="social-login">
+        <button className="social-button google">
+          <img src="https://cdn4.iconfinder.com/data/icons/logos-brands-7/512/google_logo-google_icongoogle-512.png" alt="Google" className="icon" />
+          Continue with Google
+        </button>
+        <button className="social-button facebook">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/2021_Facebook_icon.svg/2048px-2021_Facebook_icon.svg.png" alt="Facebook" className="icon" />
+          Continue with Facebook
+        </button>
+        <button className="social-button apple">
+          <img src="https://icons.veryicon.com/png/o/miscellaneous/ionicons/logo-apple-1.png" alt="Apple" className="icon" />
+          Continue with Apple
+        </button>
+      </div>
       
       <form onSubmit={handleSubmit}>
         {!isLogin && (
