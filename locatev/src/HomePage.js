@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 const HomePage = () => {
-  const API_KEY = 'AIzaSyCIn1rjggV-44-fFpWN0A4U_-FzaPBuUHE';
+  const API_KEY = 'API_KEY';
   const [searchQuery, setSearchQuery] = useState("");
   const [chargingStations, setChargingStations] = useState([]);
   const [mapError, setMapError] = useState(null);
